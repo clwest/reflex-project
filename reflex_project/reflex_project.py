@@ -4,7 +4,7 @@ import reflex as rx
 
 from rxconfig import config
 from .ui.base import base_page
-from . import blog, contact, naviagtion, pages 
+from . import blog, contact, navigation, pages 
 
 
 
@@ -17,7 +17,7 @@ class State(rx.State):
 
     def did_click(self):
         print("Hello World")
-        return rx.redirect(naviagtion.routes.ABOUT_US_ROUTE)
+        return rx.redirect(navigation.routes.ABOUT_US_ROUTE)
 
 
 
@@ -31,7 +31,7 @@ def index() -> rx.Component:
                 size="7",
             ),
             rx.link(
-                rx.button("About Us", on_click=rx.redirect(naviagtion.routes.ABOUT_US_ROUTE)),
+                rx.button("About Us", on_click=rx.redirect(navigation.routes.ABOUT_US_ROUTE)),
             ),
             spacing="5",
             justify="center",
@@ -52,21 +52,21 @@ app = rx.App()
 # Home and About Routes
 app.add_page(index)
 app.add_page(pages.about_page, 
-             route=naviagtion.routes.ABOUT_US_ROUTE)
+             route=navigation.routes.ABOUT_US_ROUTE)
 app.add_page(pages.price_page,
-             route=naviagtion.routes.PRICE_ROUTE)
+             route=navigation.routes.PRICE_ROUTE)
 
 
 # Blogs and Details
 app.add_page(
     blog.blog_post_list_page,
-    route=naviagtion.routes.BLOG_POSTS_ROUTE,
+    route=navigation.routes.BLOG_POSTS_ROUTE,
     on_load=blog.BlogPostState.load_posts
 )
 
 app.add_page(
     blog.blog_post_add_page,
-    route=naviagtion.routes.BLOG_POSTS_ADD_ROUTE,
+    route=navigation.routes.BLOG_POSTS_ADD_ROUTE,
     on_load=blog.BlogPostState.load_posts
 )
 
@@ -85,8 +85,8 @@ app.add_page(
 
 # Contact Routes.
 app.add_page(contact.contact_page,
-             route=naviagtion.routes.CONTACT_US_ROUTE)
+             route=navigation.routes.CONTACT_US_ROUTE)
 app.add_page(contact.contact_entries_list_page,
-             route=naviagtion.routes.CONTACT_ENTRIES_ROUTE,
+             route=navigation.routes.CONTACT_ENTRIES_ROUTE,
              on_load=contact.ContactState.list_entries,
              )

@@ -1,9 +1,9 @@
 *.db
 *.py[cod]
-.web
-__pycache__/
-assets/external/
 .env
 .venv
-alembic/
+.web
+__pycache__/
 alembic.init
+alembic/
+assets/external/

@@ -1,6 +1,6 @@
 import reflex as rx
 from ..ui.base import base_page
-from .. import naviagtion
+from .. import navigation
 from . import state, model
 
 def blog_post_detail_link(child: rx.Component, post: model.BlogPostModel):
@@ -11,7 +11,7 @@ def blog_post_detail_link(child: rx.Component, post: model.BlogPostModel):
     if post_id is None:
         return rx.fragment(child)
     
-    root_path = naviagtion.routes.BLOG_POSTS_ROUTE
+    root_path = navigation.routes.BLOG_POSTS_ROUTE
     post_detail_url = f"{root_path}/{post_id}"
     return rx.link(
         child,
@@ -34,7 +34,7 @@ def blog_post_list_page() -> rx.Component:
             rx.heading("Blog Posts", size="5"),
             rx.link(
                 rx.button("New Post"),
-                href=naviagtion.routes.BLOG_POSTS_ADD_ROUTE
+                href=navigation.routes.BLOG_POSTS_ADD_ROUTE
             ),
             # rx.foreach(["abc", "def", "hij"], foreach_callback ),
             rx.foreach(state.BlogPostState.posts,

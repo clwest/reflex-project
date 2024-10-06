@@ -1,6 +1,6 @@
 import reflex as rx
 
-from .. import naviagtion
+from .. import navigation
 
 
 def navbar_link(text: str, url: str) -> rx.Component:
@@ -29,11 +29,11 @@ def navbar() -> rx.Component:
                     align_items="center",
                 ),
                 rx.hstack(
-                    navbar_link("Home", naviagtion.routes.HOME_ROUTE),
-                    navbar_link("About", naviagtion.routes.ABOUT_US_ROUTE),
-                    navbar_link("Blog", naviagtion.routes.BLOG_POSTS_ROUTE),
-                    navbar_link("Pricing", naviagtion.routes.PRICE_ROUTE),
-                    navbar_link("Contact", naviagtion.routes.CONTACT_US_ROUTE),
+                    navbar_link("Home", navigation.routes.HOME_ROUTE),
+                    navbar_link("About", navigation.routes.ABOUT_US_ROUTE),
+                    navbar_link("Blog", navigation.routes.BLOG_POSTS_ROUTE),
+                    navbar_link("Pricing", navigation.routes.PRICE_ROUTE),
+                    navbar_link("Contact", navigation.routes.CONTACT_US_ROUTE),
                     spacing="5",
                 ),
                 rx.hstack(
@@ -70,15 +70,15 @@ def navbar() -> rx.Component:
                     ),
                     rx.menu.content(
                         rx.menu.item("Home",
-                                     on_click=naviagtion.NavState.to_home),
+                                     on_click=navigation.NavState.to_home),
                         rx.menu.item("About",
-                                     on_click=naviagtion.NavState.to_about_us),
+                                     on_click=navigation.NavState.to_about_us),
                         rx.menu.item("Pricing",
-                                     on_click=naviagtion.NavState.to_pricing),
+                                     on_click=navigation.NavState.to_pricing),
                         rx.menu.item("Blog",
-                                     on_click=naviagtion.NavState.to_blog),                        
+                                     on_click=navigation.NavState.to_blog),                        
                         rx.menu.item("Contact",
-                                     on_click=naviagtion.NavState.to_contact),
+                                     on_click=navigation.NavState.to_contact),
                         rx.menu.separator(),
                         rx.menu.item("Log in"),
                         rx.menu.item("Sign up"),

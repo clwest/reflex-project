@@ -21,6 +21,7 @@ def blog_post_detail() -> rx.Component:
             ),
             # todo Add subject/topic field
             # rx.text(state.BlogPostState.blog_post_id),
+            rx.text(state.BlogPostState.post.publish_date),
             rx.text(
                 state.BlogPostState.post.content,
                 white_space='pre-wrap',

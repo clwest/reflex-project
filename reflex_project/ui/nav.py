@@ -1,5 +1,5 @@
 import reflex as rx
-
+import reflex_local_auth
 from .. import navigation
 
 
@@ -37,12 +37,22 @@ def navbar() -> rx.Component:
                     spacing="5",
                 ),
                 rx.hstack(
-                    rx.button(
-                        "Sign Up",
-                        size="3",
-                        variant="outline",
+                    rx.link(
+                        rx.button(
+                            "Register",
+                            size="3",
+                            variant="outline",
+                        ),
+                    href=reflex_local_auth.routes.REGISTER_ROUTE
+                ),
+                    rx.link(
+                        rx.button(
+                                "Log In", 
+                                size="3",
+                                variant="outline"
+                            ),
+                    href=reflex_local_auth.routes.LOGIN_ROUTE
                     ),
-                    rx.button("Log In", size="3"),
                     spacing="4",
                     justify="end",
                 ),
@@ -70,18 +80,20 @@ def navbar() -> rx.Component:
                     ),
                     rx.menu.content(
                         rx.menu.item("Home",
-                                     on_click=navigation.NavState.to_home),
+                                    on_click=navigation.NavState.to_home),
                         rx.menu.item("About",
-                                     on_click=navigation.NavState.to_about_us),
+                                    on_click=navigation.NavState.to_about_us),
                         rx.menu.item("Pricing",
-                                     on_click=navigation.NavState.to_pricing),
+                                    on_click=navigation.NavState.to_pricing),
                         rx.menu.item("Blog",
-                                     on_click=navigation.NavState.to_blog),                        
+                                    on_click=navigation.NavState.to_blog),                        
                         rx.menu.item("Contact",
-                                     on_click=navigation.NavState.to_contact),
+                                    on_click=navigation.NavState.to_contact),
                         rx.menu.separator(),
-                        rx.menu.item("Log in"),
-                        rx.menu.item("Sign up"),
+                        rx.menu.item("Log in",
+                                    on_click=navigation.NavState.to_login),
+                        rx.menu.item("Register",
+                                    on_click=navigation.NavState.to_register),
                     ),
                     justify="end",
                 ),

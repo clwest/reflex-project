@@ -34,7 +34,7 @@ def blog_post_add_form() -> rx.Component:
 def blog_post_edit_form() -> rx.Component:   
     post = BlogEditFormState.post
     title = post.title
-    is_published= post.is_published
+    is_published = post.is_published
     post_content = BlogEditFormState.post_content  
 
     
@@ -82,11 +82,13 @@ def blog_post_edit_form() -> rx.Component:
                     rx.box(
                         rx.hstack(
                             rx.input(
+                                default_value=BlogEditFormState.publish_display_date,
                                 type="date",
                                 name="publish_date",
                                 width="100%"
                             ),
                             rx.input(
+                                default_value=BlogEditFormState.publish_display_time,
                                 type="time",
                                 name="publish_time",
                                 width="100%"

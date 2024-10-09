@@ -54,7 +54,7 @@ def blog_post_edit_form() -> rx.Component:
                         name="title",
                         placeholder="Title",
                         required=True,
-                        width='100%'
+                        width='100%',
                         
                     ),
                     width="100%",
@@ -66,7 +66,7 @@ def blog_post_edit_form() -> rx.Component:
                     placeholder='Your Message',
                     required=True,
                     height='50vh',
-                    width='100%'
+                    width='100%',
                     ),
                     rx.flex(
                         rx.switch(

@@ -30,8 +30,11 @@ class State(rx.State):
 
 def index() -> rx.Component:
     # Welcome Page (Index)
+    my_user_obj = SessionState.authenticated_user_info
     my_child = rx.vstack(
             rx.heading(State.label, size="9"),
+            rx.text(my_user_obj),
+            rx.text(my_user_obj.user),
             rx.text(
                 "Under Development ",
                 size="7",

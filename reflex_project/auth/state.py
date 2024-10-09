@@ -2,7 +2,7 @@ from typing import Optional
 import sqlmodel
 import reflex as rx
 import reflex_local_auth
-from .models import UserInfo
+from ..models import UserInfo
 
 class MyRegisterState(reflex_local_auth.RegistrationState):
     # This event handler must be named something besides `handle_registration`!!!
@@ -52,6 +52,8 @@ class SessionState(reflex_local_auth.LocalAuthState):
             ).one_or_none()
             if result is None:
                 return None
+            # Database lookup for user
+            result.user
             # user_obj = result.user
             # print(result.user)
             return(result)

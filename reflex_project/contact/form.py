@@ -9,14 +9,15 @@ from ..auth.state import SessionState
 def contact_form() -> rx.Component:
     
     return rx.form(
-            rx.cond(
-                rx.input(
-                    type="hidden",
-                    name="user_id",
-                    value=SessionState.my_user_id
-                ),
-                rx.fragment('')
-            ),
+            # rx.cond(
+            #     SessionState.my_user_id,
+            #     rx.input(
+            #         type="hidden",
+            #         name="user_id",
+            #         value=SessionState.my_user_id
+            #     ),
+            #     rx.fragment('')
+            # ),
             rx.vstack(
                 rx.hstack(
                     rx.input(

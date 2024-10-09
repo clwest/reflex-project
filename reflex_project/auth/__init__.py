@@ -1,7 +1,7 @@
-from .models import UserInfo
+# from .models import UserInfo
 
-__all__ = [
+# __all__ = [
 
-    'UserInfo',
+#     'UserInfo',
 
-]
+# ]

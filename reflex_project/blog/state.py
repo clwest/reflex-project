@@ -4,7 +4,7 @@ from typing import List, Optional
 from sqlmodel import select
 
 from .. import navigation
-from .model import BlogPostModel
+from ..models import BlogPostModel
 
 BLOG_POSTS_ROUTE = navigation.routes.BLOG_POSTS_ROUTE
 if BLOG_POSTS_ROUTE.endswith("/"):

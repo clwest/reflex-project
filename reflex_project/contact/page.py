@@ -1,11 +1,12 @@
 import reflex as rx
 from ..auth.state import SessionState
 from ..ui.base import base_page
-from . import form, state, model
+from . import form, state
+from ..models import ContactEntryModel
 
 
 
-def contact_entry_list_item(contact: model.ContactEntryModel):
+def contact_entry_list_item(contact: ContactEntryModel):
     return rx.box(
         rx.heading(contact.first_name),
         rx.text("Message: ", contact.message),

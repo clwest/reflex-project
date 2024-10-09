@@ -1,7 +1,7 @@
 import reflex as rx
 import reflex_local_auth
 from reflex_local_auth.pages.components import input_100w, MIN_WIDTH, PADDING_TOP
-from .models import UserInfo
+from ..models import UserInfo
 from .state import MyRegisterState
 
 

@@ -1,3 +1,4 @@
+from typing import Optional, List
 from datetime import datetime
 # Reflex
 import reflex as rx
@@ -13,6 +14,12 @@ class UserInfo(rx.Model, table=True):
     email: str
     user_id: int = Field(foreign_key='localuser.id')
     user: LocalUser | None = Relationship() # LocalUser instance based off of user_id in FK
+    posts: List["BlogPostModel"] = Relationship(
+        back_populates="userinfo"
+    )
+    contact_entries: List["ContactEntryModel"] = Relationship(
+        back_populates="userinfo"
+    )
     # created_at
     created_at: datetime = Field(
         default_factory=utils.timing.get_utc_now,
@@ -35,6 +42,9 @@ class UserInfo(rx.Model, table=True):
 
 class BlogPostModel(rx.Model, table=True):
     # User
+    userinfo_id: int = Field(default=None, foreign_key="userinfo.id")
+    userinfo: Optional['UserInfo'] = Relationship(back_populates="posts")
+    
     title: str
     content: str
     
@@ -67,6 +77,8 @@ class BlogPostModel(rx.Model, table=True):
 
 class ContactEntryModel(rx.Model, table=True):
     user_id: int | None = None
+    userinfo_id: int = Field(default=None, foreign_key="userinfo.id")
+    userinfo: Optional['UserInfo'] = Relationship(back_populates="contact_entries")
     first_name: str
     last_name: str | None = None
     email: str = Field(nullable=True)

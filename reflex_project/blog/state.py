@@ -1,11 +1,13 @@
 from datetime import datetime
 import reflex as rx
 from typing import List, Optional
+
+import sqlalchemy
 from sqlmodel import select
 
 from .. import navigation
 from ..auth.state import SessionState
-from ..models import BlogPostModel
+from ..models import BlogPostModel, UserInfo
 
 BLOG_POSTS_ROUTE = navigation.routes.BLOG_POSTS_ROUTE
 if BLOG_POSTS_ROUTE.endswith("/"):
@@ -28,42 +30,59 @@ class BlogPostState(SessionState):
             return f"{BLOG_POSTS_ROUTE}"
         return f"{BLOG_POSTS_ROUTE}/{self.post.id}" 
 
+    # @rx.var
+    # def blog_post_edit_url(self):
+    #     if not self.post:
+    #         return f"{BLOG_POSTS_ROUTE}"
+    #     return f"{BLOG_POSTS_ROUTE}/{self.post.id}/edit"     
     @rx.var
     def blog_post_edit_url(self):
         if not self.post:
             return f"{BLOG_POSTS_ROUTE}"
-        return f"{BLOG_POSTS_ROUTE}/{self.post.id}/edit"     
+        return f"{BLOG_POSTS_ROUTE}/{self.post.id}/edit"
     
     
     def get_post_detail(self):
+        lookups = (
+            (BlogPostModel.userinfo_id == self.my_userinfo_id) &
+            (BlogPostModel.id == self.blog_post_id)
+        )
         with rx.session() as session:
             if self.blog_post_id == "":
                 self.post = None
                 return
             
-            result = session.exec(
-                select(BlogPostModel).where(
-                    BlogPostModel.id == self.blog_post_id
+            sql_statement = select(BlogPostModel).options(
+                sqlalchemy.orm.joinedload(BlogPostModel.userinfo).joinedload(UserInfo.user)
+            ).where(
+                    lookups
                 )
+            result = session.exec(
+                sql_statement
             ).one_or_none()
+            # if result.userinfo: # Db lookup
+            #     print("I'm at blog/state.py")
+            #     result.userinfo.user
             self.post = result
             if result is None:
                 self.post_content = ""
                 return
             self.post_content = self.post.content
-            self.is_published_active = self.post.content
+            self.is_published_active = self.post.is_published
     
-    def load_posts(self, published_only=True):
+    def load_posts(self, *args, **kwargs):
         lookup_args = ()
-        if published_only:
-            lookup_args = (
-                    (BlogPostModel.is_published == True) &
-                    (BlogPostModel.publish_date < datetime.now())
-            )
+        # if published_only:
+        #     lookup_args = (
+        #             (BlogPostModel.is_published == True) &
+        #             (BlogPostModel.publish_date < datetime.now())
+        #     )
         with rx.session() as session:
             result = session.exec(
-                select(BlogPostModel).where(
-                    *lookup_args
+                select(BlogPostModel).options(
+                    sqlalchemy.orm.joinedload(BlogPostModel.userinfo)
+                ).where(
+                    BlogPostModel.userinfo_id == self.my_userinfo_id
                 )
             ).all()
             self.posts = result
@@ -104,13 +123,7 @@ class BlogPostState(SessionState):
             return rx.redirect(f"{self.blog_post_edit_url}")
         return rx.redirect(f"{self.blog_post_url}")
     
-    
-    # def get_post(self):
-    #     with rx.session() as session:
-    #         result = session.exec(
-    #             select(BlogPostModel)
-    #         )
-    #         self.posts = result
+
 
 
 # inherits from PostState to add form_data to add_post
@@ -121,8 +134,7 @@ class BlogAddFormState(BlogPostState):
         data = form_data.copy()
         if self.my_userinfo_id is not None:
             data['userinfo_id'] = self.my_userinfo_id
-        self.form_data = data
-        print("Data", data)
+        self.form_data = data 
         self.add_post(data)
         return self.to_blog_post(edit_page=True)
         
@@ -161,8 +173,8 @@ class BlogEditFormState(BlogPostState):
             publish_time = form_data.pop('publish_time')
 
 
-        print("Printing date and time")
-        print(publish_date, publish_time)
+        # print("Printing date and time")
+        # print(publish_date, publish_time)
 
         publish_input_string = f"{publish_date} {publish_time}"
 

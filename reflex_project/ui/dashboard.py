@@ -12,7 +12,7 @@ def base_dashboard_page(child: rx.Component, *args, **kwargs) -> rx.Component:
             rx.logo(),
             padding="1em",
             width="100%",
-            id="content-area-em"
+            id="content-area-el"
             ),
         ),
         # rx.color_mode.button(position="bottom-left"),

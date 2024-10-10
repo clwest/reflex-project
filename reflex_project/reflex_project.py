@@ -2,9 +2,9 @@
 
 import reflex as rx
 import reflex_local_auth
+
 from rxconfig import config
 from .ui.base import base_page
-from . import  blog, contact, navigation, pages 
 
 from .auth.pages import (
     my_login_page,
@@ -14,44 +14,23 @@ from .auth.pages import (
 
 from .auth.state import SessionState
 
-class State(rx.State):
-    """The app state."""
-    label = "Welcome to Donkey Betz!"
-    
-    def handle_input_change(self, val):
-        self.label = val
+from .articles.detail import article_detail_page
+from .articles.list import article_public_list_page, article_public_list_component
+from .articles.state import ArticlePublicState
 
-    def did_click(self):
-        print("Hello World")
-        return rx.redirect(navigation.routes.ABOUT_US_ROUTE)
-
+from . import  blog, contact, navigation, pages 
 
 
 
 def index() -> rx.Component:
     # Welcome Page (Index)
-    my_user_obj = SessionState.authenticated_user_info
-    my_child = rx.vstack(
-            rx.heading(State.label, size="9"),
-            rx.text(my_user_obj),
-            rx.text(my_user_obj.user),
-            rx.text(
-                "Under Development ",
-                size="7",
-            ),
-            rx.link(
-                rx.button("About Us", on_click=rx.redirect(navigation.routes.ABOUT_US_ROUTE)),
-            ),
-            spacing="5",
-            justify="center",
-            align="center",
-            text_align="center",
-            min_height="85vh",
-        
-            id="my-child"
-        ),
     
-    return base_page(my_child)
+    return base_page(
+        rx.cond(SessionState.is_authenticated,
+                pages.dashboard_component(),
+                pages.landing_component(),
+                )
+    )
 
 
 
@@ -59,7 +38,8 @@ def index() -> rx.Component:
 app = rx.App()
 
 # Home and About Routes
-app.add_page(index)
+app.add_page(index,
+            on_load=ArticlePublicState.load_posts)
 
 # Reflex local auth pages
 app.add_page(
@@ -84,14 +64,30 @@ app.add_page(pages.about_page,
 
 app.add_page(
     pages.protected_page, 
-    route="/protected",
+    route="/protected/",
     on_load=SessionState.on_load)
 
-app.add_page(pages.price_page,
-            route=navigation.routes.PRICE_ROUTE)
+
+app.add_page(
+    article_public_list_page,
+    route=navigation.routes.ARTICLE_LIST_ROUTE,
+    on_load=ArticlePublicState.load_posts
+)
+
+app.add_page(
+    article_detail_page,
+    # href=f"/blog/{state.BlogPostState.blog_post_id}/edit")
+    route=f"{navigation.routes.ARTICLE_LIST_ROUTE}/[post_id]",
+    on_load=ArticlePublicState.get_post_detail
+)
+
+
+
 
 
 # Blogs and Details
+
+
 app.add_page(
     blog.blog_post_list_page,
     route=navigation.routes.BLOG_POSTS_ROUTE,
@@ -100,8 +96,7 @@ app.add_page(
 
 app.add_page(
     blog.blog_post_add_page,
-    route=navigation.routes.BLOG_POSTS_ADD_ROUTE,
-    on_load=blog.BlogPostState.load_posts
+    route=navigation.routes.BLOG_POSTS_ADD_ROUTE
 )
 
 app.add_page(
@@ -113,14 +108,10 @@ app.add_page(
 app.add_page(
     blog.blog_post_edit_page,
     route="/blog/[blog_id]/edit",
-    # on_load=blog.BlogPostState.get_post_detail
+    on_load=blog.BlogPostState.get_post_detail
 )
 
-# app.add_page(
-#     "/published",
-#     route=navigation.routes.BLOG_POSTS_ROUTE    ,
-#     # on_load=blog.BlogPostState.get_post_detail
-# )
+
 
 # Contact Routes.
 app.add_page(contact.contact_page,
@@ -129,3 +120,7 @@ app.add_page(contact.contact_entries_list_page,
             route=navigation.routes.CONTACT_ENTRIES_ROUTE,
             on_load=contact.ContactState.list_entries,
             )
+
+
+app.add_page(pages.price_page,
+            route=navigation.routes.PRICE_ROUTE)

@@ -1,8 +1,9 @@
 import reflex as rx
+import reflex_local_auth
 from ..ui.base import base_page
 from . import forms
 
-
+@reflex_local_auth.require_login
 def blog_post_add_page() -> rx.Component:
     my_form = forms.blog_post_add_form()
     my_child = rx.vstack(
@@ -14,12 +15,18 @@ def blog_post_add_page() -> rx.Component:
                     id="desktop-box"
                 ),
             ),
-            rx.mobile_and_tablet(
+            rx.tablet_only(
                 rx.box(
                     my_form,
                     width="75vw",
                     )
                 ),
+            rx.mobile_only(
+                rx.box(
+                    my_form,
+                    width="95vh"
+                )
+            ),
             spacing="5",
             align="center",
             text_align="center",

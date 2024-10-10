@@ -6,8 +6,8 @@ from .. import navigation
 
 def sidebar_user_item() -> rx.Component:
     user_info_obj = SessionState.authenticated_user_info
-    username_via_user_obj = rx.cond(SessionState.is_authenticated, 
-                                    SessionState.authenticated_user.username, 
+    username_via_user_obj = rx.cond(SessionState.authenticated_username, 
+                                    SessionState.authenticated_username, 
                                     "Account")
     return  rx.cond( 
         user_info_obj,
@@ -32,6 +32,7 @@ def sidebar_user_item() -> rx.Component:
                         width="100%",
                     ),
                     spacing="0",
+                    align="start",
                     justify="start",
                     width="100%",
                 ),
@@ -141,6 +142,7 @@ def sidebar_item(
 def sidebar_items() -> rx.Component:
     return rx.vstack(
         sidebar_item("Dashboard", "layout-dashboard", navigation.routes.HOME_ROUTE),
+        sidebar_item("Articles", "globe", navigation.routes.ARTICLE_LIST_ROUTE),
         sidebar_item("Blog", "square-library", navigation.routes.BLOG_POSTS_ROUTE),
         sidebar_item("Create Post", "square-library", navigation.routes.BLOG_POSTS_ADD_ROUTE),
         sidebar_item("Contact Us", "mails", navigation.routes.CONTACT_US_ROUTE),
@@ -156,7 +158,7 @@ def sidebar() -> rx.Component:
             rx.vstack(
                 rx.hstack(
                     rx.image(
-                        src="/logo.jpg",
+                        src="/close.png",
                         width="2.25em",
                         height="auto",
                         border_radius="25%",

@@ -13,6 +13,7 @@ def blog_post_add_form() -> rx.Component:
                         name="title",
                         placeholder="Title",
                         required=True,
+                        type="text",
                         width='100%'
                         
                     ),
@@ -54,6 +55,7 @@ def blog_post_edit_form() -> rx.Component:
                         name="title",
                         placeholder="Title",
                         required=True,
+                        type="text",
                         width='100%',
                         
                     ),

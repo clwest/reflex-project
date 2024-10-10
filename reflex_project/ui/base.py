@@ -13,7 +13,7 @@ def base_layout_component(child: rx.Component, *args, **kwargs) -> rx.Component:
         child,        
         padding="1em",
         width="100%",
-        id="content-area-em"
+        id="content-area-el"
         ),
         rx.logo(),
         rx.color_mode.button(position="bottom-left"),

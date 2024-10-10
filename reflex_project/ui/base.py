@@ -15,7 +15,6 @@ def base_layout_component(child: rx.Component, *args, **kwargs) -> rx.Component:
         width="100%",
         id="content-area-el"
         ),
-        rx.logo(),
         rx.color_mode.button(position="bottom-left"),
         # id="my-base-container"
     )

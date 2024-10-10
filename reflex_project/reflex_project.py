@@ -18,7 +18,7 @@ from .articles.detail import article_detail_page
 from .articles.list import article_public_list_page, article_public_list_component
 from .articles.state import ArticlePublicState
 
-from . import  blog, contact, navigation, pages 
+from . import  blog, contact, navigation, pages , chat
 
 
 
@@ -35,7 +35,14 @@ def index() -> rx.Component:
 
 
 
-app = rx.App()
+app = rx.App(
+    theme=rx.theme(
+        appearance="light",
+        has_background=True,
+        radius="large",
+        accent_color="cyan",
+    )
+)
 
 # Home and About Routes
 app.add_page(index,
@@ -124,3 +131,6 @@ app.add_page(contact.contact_entries_list_page,
 
 app.add_page(pages.price_page,
             route=navigation.routes.PRICE_ROUTE)
+
+app.add_page(chat.chat_page,
+            route=navigation.routes.CHATBOT_ROUTE)

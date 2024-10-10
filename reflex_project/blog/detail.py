@@ -19,11 +19,7 @@ def blog_post_detail() -> rx.Component:
                 edit_link_el,
                 align="end"
             ),
-            # todo Add subject/topic field
-            # rx.text(state.BlogPostState.blog_post_id),
-            # rx.text("User info id: ", state.BlogPostState.post.userinfo_id),
-            # rx.text("User data: ", state.BlogPostState.post.userinfo.to_string()),
-            # rx.text("User: ", state.BlogPostState.post.userinfo.user.to_string()),
+            #Todo Add subject/topic field
             rx.text(state.BlogPostState.post.publish_date),
             rx.text(
                 state.BlogPostState.post.content,

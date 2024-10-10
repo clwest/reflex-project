@@ -41,7 +41,6 @@ def blog_post_list_page() -> rx.Component:
                 rx.button("New Post"),
                 href=navigation.routes.BLOG_POSTS_ADD_ROUTE
             ),
-            # rx.foreach(["abc", "def", "hij"], foreach_callback ),
             rx.foreach(state.BlogPostState.posts,
                     blog_post_list_item),
             spacing="5",

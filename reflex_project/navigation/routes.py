@@ -12,3 +12,5 @@ BLOG_POSTS_ADD_ROUTE="/blog/add"
 
 LOGOUT_ROUTE="/logout"
 PRICE_ROUTE="/pricing"
+
+CHATBOT_ROUTE="/chat"

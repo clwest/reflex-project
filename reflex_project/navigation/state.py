@@ -44,3 +44,9 @@ class NavState(rx.State):
         return rx.redirect(
             routes.PRICE_ROUTE
         )
+    
+    # Chatbot Routes
+    def to_chatbot(self):
+        return rx.redirect(
+            routes.CHATBOT_ROUTE
+        )

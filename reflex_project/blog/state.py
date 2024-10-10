@@ -29,19 +29,14 @@ class BlogPostState(SessionState):
         if not self.post:
             return f"{BLOG_POSTS_ROUTE}"
         return f"{BLOG_POSTS_ROUTE}/{self.post.id}" 
-
-    # @rx.var
-    # def blog_post_edit_url(self):
-    #     if not self.post:
-    #         return f"{BLOG_POSTS_ROUTE}"
-    #     return f"{BLOG_POSTS_ROUTE}/{self.post.id}/edit"     
+    
     @rx.var
     def blog_post_edit_url(self):
         if not self.post:
             return f"{BLOG_POSTS_ROUTE}"
         return f"{BLOG_POSTS_ROUTE}/{self.post.id}/edit"
     
-    
+
     def get_post_detail(self):
         lookups = (
             (BlogPostModel.userinfo_id == self.my_userinfo_id) &
@@ -71,12 +66,6 @@ class BlogPostState(SessionState):
             self.is_published_active = self.post.is_published
     
     def load_posts(self, *args, **kwargs):
-        lookup_args = ()
-        # if published_only:
-        #     lookup_args = (
-        #             (BlogPostModel.is_published == True) &
-        #             (BlogPostModel.publish_date < datetime.now())
-        #     )
         with rx.session() as session:
             result = session.exec(
                 select(BlogPostModel).options(
@@ -86,18 +75,16 @@ class BlogPostState(SessionState):
                 )
             ).all()
             self.posts = result
-        # return
+
     
     def add_post(self, form_data:dict):
         with rx.session() as session:
             post = BlogPostModel(**form_data)
-            # print("adding", post)
             session.add(post)
             session.commit()
             session.refresh(post) # should have post_id
-            # print("Added", post)
             self.post = post
-        # return
+
 
     def edit_post(self, post_id: id, updated_data:dict):
         with rx.session() as session:
@@ -114,7 +101,7 @@ class BlogPostState(SessionState):
             session.commit()
             session.refresh(post)
             self.post = post
-        # return
+
         
     def to_blog_post(self, edit_page=False):
         if not self.post:
@@ -173,9 +160,6 @@ class BlogEditFormState(BlogPostState):
             publish_time = form_data.pop('publish_time')
 
 
-        # print("Printing date and time")
-        # print(publish_date, publish_time)
-
         publish_input_string = f"{publish_date} {publish_time}"
 
         try:
@@ -191,5 +175,4 @@ class BlogEditFormState(BlogPostState):
         updated_data['publish_date'] = final_publish_date
 
         self.edit_post(post_id, updated_data)   
-        # self.add_post(form_data)
         return self.to_blog_post()

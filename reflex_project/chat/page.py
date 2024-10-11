@@ -31,9 +31,10 @@ def message_box(chat_message: ChatMessageState) -> rx.Component:
 def chat_page() -> rx.Component:
     my_child = rx.vstack(
         rx.heading("ChatBot", size="9", color_scheme="cyan"),
+        rx.cond(ChatSessionState.not_found, "Not Found", "Found"),
         rx.hstack(
         rx.text("GPT-4o-Mini"),
-        rx.button("New Chat", on_click=ChatSessionState.clear_and_start_new)
+        rx.button("New Chat", on_click=ChatSessionState.create_new_and_redirect)
         ),
         rx.box(
             rx.foreach(ChatSessionState.messages, message_box),

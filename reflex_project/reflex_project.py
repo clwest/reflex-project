@@ -129,8 +129,18 @@ app.add_page(contact.contact_entries_list_page,
             )
 
 
-app.add_page(pages.price_page,
+app.add_page(
+            pages.price_page,
             route=navigation.routes.PRICE_ROUTE)
 
-app.add_page(chat.chat_page,
-            route=navigation.routes.CHATBOT_ROUTE)
+app.add_page(
+            chat.chat_page,
+            route=navigation.routes.CHATBOT_ROUTE,
+            on_load=chat.state.ChatSessionState.on_load
+            )
+
+app.add_page(
+    chat.chat_page,
+    route=f"{navigation.routes.CHATBOT_ROUTE}/[session_id]",
+    on_load=chat.state.ChatSessionState.on_detail_load,
+)

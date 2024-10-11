@@ -92,12 +92,10 @@ class ContactEntryModel(rx.Model, table=True):
         nullable=False
     )
 
-class ChatModel(rx.Model, table=True):
+class ChatSession(rx.Model, table=True):
     # id
-    # messages
-    title: str
-    
-    # created_at
+    messages: List["ChatMessage"] = Relationship(back_populates="session")
+    # title: str
     created_at: datetime = Field(
         default_factory=utils.timing.get_utc_now,
         sa_type=sqlalchemy.DateTime(timezone=True),
@@ -114,4 +112,29 @@ class ChatModel(rx.Model, table=True):
             'server_default': sqlalchemy.func.now()
         },
         nullable=False
+    )
+
+class ChatMessage(rx.Model, table=True):
+    session_id: int = Field(default=None, foreign_key="chatsession.id")
+    session: ChatSession = Relationship(back_populates="messages")
+    content: str
+    role: str
+
+
+    created_at: datetime = Field(
+        default_factory=utils.timing.get_utc_now,
+        sa_type=sqlalchemy.DateTime(timezone=True),
+        sa_column_kwargs={
+            'server_default': sqlalchemy.func.now()
+        },
+        nullable=False
+    )
+    updated_at: datetime = Field(
+        default_factory=utils.timing.get_utc_now,
+        sa_type=sqlalchemy.DateTime(timezone=True),
+        sa_column_kwargs={
+            'onupdate': sqlalchemy.func.now(),
+            'server_default': sqlalchemy.func.now()
+        },
+        nullable=False    
     )

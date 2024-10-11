@@ -1,6 +1,6 @@
 import reflex as rx
 from ..ui.base import base_page
-from .state import ChatMessage, ChatState
+from .state import ChatMessageState, ChatSessionState
 from .form import chat_form
 
 
@@ -10,7 +10,7 @@ message_style = dict(display="inline-block", padding="1em", border_radius="8px",
 
 
 
-def message_box(chat_message: ChatMessage) -> rx.Component:
+def message_box(chat_message: ChatMessageState) -> rx.Component:
     return rx.box(
         rx.box(
             rx.markdown(
@@ -31,9 +31,12 @@ def message_box(chat_message: ChatMessage) -> rx.Component:
 def chat_page() -> rx.Component:
     my_child = rx.vstack(
         rx.heading("ChatBot", size="9", color_scheme="cyan"),
-        rx.text("Powered by OpenAI"),
+        rx.hstack(
+        rx.text("GPT-4o-Mini"),
+        rx.button("New Chat", on_click=ChatSessionState.clear_and_start_new)
+        ),
         rx.box(
-            rx.foreach(ChatState.messages, message_box),
+            rx.foreach(ChatSessionState.messages, message_box),
             width="100%",
         ),
         chat_form(),

@@ -37,6 +37,7 @@ def navbar() -> rx.Component:
                     navbar_link("Home", navigation.routes.HOME_ROUTE),
                     navbar_link("About", navigation.routes.ABOUT_US_ROUTE),
                     navbar_link("Articles", navigation.routes.ARTICLE_LIST_ROUTE),
+                    navbar_link("Chatbot", navigation.routes.CHATBOT_ROUTE),
                     navbar_link("Pricing", navigation.routes.PRICE_ROUTE),
                     navbar_link("Contact", navigation.routes.CONTACT_US_ROUTE),
                     spacing="5",
@@ -92,7 +93,9 @@ def navbar() -> rx.Component:
                         rx.menu.item("Pricing",
                                     on_click=navigation.NavState.to_pricing),
                         rx.menu.item("Articles",
-                                    on_click=navigation.NavState.to_articles),                        
+                                    on_click=navigation.NavState.to_articles),
+                        rx.menu.item("Chatbot",
+                                    on_click=navigation.NavState.to_chatbot),                       
                         rx.menu.item("Contact",
                                     on_click=navigation.NavState.to_contact),
                         rx.menu.separator(),
@@ -116,4 +119,3 @@ def navbar() -> rx.Component:
         id="my-nav-bar",
     )
 
- 

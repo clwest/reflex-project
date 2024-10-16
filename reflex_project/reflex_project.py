@@ -137,7 +137,7 @@ app.add_page(
 app.add_page(
             chat.chat_page,
             route=navigation.routes.CHATBOT_ROUTE,
-            on_load=chat.state.ChatSessionState.on_load
+            on_load=chat.state.ChatSessionState.create_new_and_redirect
             )
 
 app.add_page(

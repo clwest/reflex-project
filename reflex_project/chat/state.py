@@ -10,7 +10,10 @@ class ChatMessageState(rx.Base):
     message: str
     is_bot: bool = False
 
-
+""" 
+TODO: Start with figuring out why sessions are being created, they seem to be coming from the AI for some reason.
+    then move into creating a search for embeddings. After that either add in the loaders or images.
+"""
 class ChatSessionState(SessionState):
     chat_session: ChatSession = None
     not_found: Optional[bool] = None
@@ -33,29 +36,37 @@ class ChatSessionState(SessionState):
             my_session_id = None
         return my_session_id
 
-    def create_new_chat_session(self):
-        print(f"Creating new chat session for user {self.my_userinfo_id}")
-        if self.chat_session:
-            print(f"Using existing chat session: {self.chat_session.id}")
-            # If there is already a session use the existing one
-            return self.chat_session
-        
-        # Check if there's already a session for the current user in the database.
-        with rx.session() as db_session:
-            # Fetch the most recent session for the user
-            existing_session = db_session.exec(
-                sqlmodel.select(ChatSession)
-                .where(ChatSession.userinfo_id == self.my_userinfo_id)
-                .order_by(ChatSession.created_at.desc()) # Order by creation date, descending
-                .limit(1) # Limit to the most recent session
-            ).one_or_none()
 
-            if existing_session:
-                print(f"Found existing session: {existing_session.id}")
-                self.chat_session = existing_session
-                return existing_session
+    def create_new_chat_session(self, force_new=False):
+        print(f"Creating new chat session for user {self.my_userinfo_id}")
+
+        # If forcing a new session, skip the check for an existing session
+        if not force_new:
+            if self.chat_session:
+                print(f"Using existing chat session: {self.chat_session.id}")
+                return self.chat_session
             
-            # If no sessions exists, create a new one.
+            with rx.session() as db_session:
+                # Fetch the most recent session for the user
+                existing_session = db_session.exec(
+                    sqlmodel.select(ChatSession)
+                    .where(ChatSession.userinfo_id == self.my_userinfo_id)
+                    .order_by(ChatSession.created_at.desc())  # Most recent first
+                    .limit(1)
+                ).one_or_none()
+
+                if existing_session:
+                    print(f"Found existing session: {existing_session.id}")
+                    self.chat_session = existing_session
+                    return existing_session
+        
+        if not self.my_userinfo_id:
+            print("No userinfo_id provided! Aborting session creation.")
+            return None # Ensure we don't create a session with NULL userinfo_id
+
+        # If no session exists (or if force_new=True), create a new one
+        print(f"Creating new session for user: {self.my_userinfo_id}")
+        with rx.session() as db_session:
             obj = ChatSession(userinfo_id=self.my_userinfo_id)
             db_session.add(obj)
             db_session.commit()
@@ -63,18 +74,21 @@ class ChatSessionState(SessionState):
             self.chat_session = obj
             return obj
 
-
-    def clear_ui(self):
-        self.chat_session = None
+    def clear_ui(self, reset_session=False):
+        print(f"Clearing UI - Session: {self.chat_session.id if self.chat_session else 'None'}")
+        # Only reset session if explicitly asked to
+        if reset_session:
+            self.chat_session = None
         self.not_found = None
         self.did_submit = False
         self.messages = []
     
     def create_new_and_redirect(self):
-        self.clear_ui()
-        new_chat_session = self.create_new_chat_session()
+
+        self.clear_ui(reset_session=True) # Explicitly clear the session
+        new_chat_session = self.create_new_chat_session(force_new=True)
+        print(f"Creating new session: {new_chat_session.id}")
         return rx.redirect(f"/chat/{new_chat_session.id}")
-    
 
     def clear_and_start_new(self):
         self.clear_ui()
@@ -107,6 +121,7 @@ class ChatSessionState(SessionState):
     def on_detail_load(self):
         session_id = self.get_session_id
         reload_detail = False
+
         if not self.chat_session:
             reload_detail = True
         
@@ -134,12 +149,13 @@ class ChatSessionState(SessionState):
             print(f"Using existing session: {self.chat_session.id}")
     
     def insert_message_to_db(self, content, role='unknown'):
-        
         print("Inserting chat session to db")
+
         if self.chat_session is None:
+            print("Invalid session! Aborting message insertion.")
             return
         if not isinstance(self.chat_session, ChatSession):
-            return
+            return # Ensure the session is valid
         
         # Create the embedding for the message
         embedding = ai.create_embedding(content)
@@ -156,12 +172,18 @@ class ChatSessionState(SessionState):
             obj = ChatMessage(**data)
             db_session.add(obj)
             db_session.commit() 
+        print(f"Message inserted to session: {self.chat_session.id}")
 
 
     def append_message_to_ui(self, message, is_bot:bool=False):
         if self.chat_session is not None:
             print(f"Appending message to UI for session: {self.chat_session.id}")
-            print(self.chat_session.id)
+        
+        if not self.chat_session: # Ensure there's no session creation happening
+            print("No active session! Aborting message append.")
+            return 
+        
+
         with rx.session() as session:
             session.add(
                 ChatSession(
@@ -198,19 +220,29 @@ class ChatSessionState(SessionState):
         user_message = form_data.get("message")
         if user_message:
             self.did_submit = True
+            
+            # Ensure a session exists before processing the message
+            if not self.chat_session:
+                print("No chat session available, creating new one.")
+                self.create_new_chat_session()
+            
+            # Proceed with appending the user's message
             self.append_message_to_ui(user_message, is_bot=False)
-
+            print(f"Before user message insert - Session: {self.chat_session.id}, User: {self.my_userinfo_id}")
             self.insert_message_to_db(user_message, "user")
-            print(f"Using session: {self.chat_session.id}")
             yield
 
             gpt_messages = self.get_gpt_messages()
             bot_response = ai.get_llm_response(gpt_messages)
-            print("Received response from OpenAI: ", bot_response)
+
+            # Log the session status after the AI response
+            print(f"Before AI response insert - Session: {self.chat_session.id}, User: {self.my_userinfo_id}")
             
             self.did_submit = False
+
             self.append_message_to_ui(bot_response, is_bot=True)
             self.insert_message_to_db(bot_response, role="system")
-            print(f"Using session after response: {self.chat_session.id}") 
+            
+            print(f"After AI insert to DB response insert - Session: {self.chat_session.id}, User: {self.my_userinfo_id}")
             yield
 

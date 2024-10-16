@@ -106,8 +106,6 @@ class ChatSession(rx.Model, table=True):
     # Relationships
     messages: List["ChatMessage"] = Relationship(back_populates="session")
 
-    # title: str
-    
     # Timestamp
     created_at: datetime = Field(
         default_factory=utils.timing.get_utc_now,

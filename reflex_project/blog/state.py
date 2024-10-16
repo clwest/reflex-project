@@ -39,7 +39,7 @@ class BlogPostState(SessionState):
 
     def get_post_detail(self):
         lookups = (
-            (BlogPostModel.userinfo_id == self.my_userinfo_id) &
+            (BlogPostModel.userinfo_id == self.get_authenticated_userinfo_id) &
             (BlogPostModel.id == self.blog_post_id)
         )
         with rx.session() as session:
@@ -71,7 +71,7 @@ class BlogPostState(SessionState):
                 select(BlogPostModel).options(
                     sqlalchemy.orm.joinedload(BlogPostModel.userinfo)
                 ).where(
-                    BlogPostModel.userinfo_id == self.my_userinfo_id
+                    BlogPostModel.userinfo_id == self.get_authenticated_userinfo_id
                 )
             ).all()
             self.posts = result
@@ -119,8 +119,8 @@ class BlogAddFormState(BlogPostState):
     
     def handle_submit(self, form_data):
         data = form_data.copy()
-        if self.my_userinfo_id is not None:
-            data['userinfo_id'] = self.my_userinfo_id
+        if self.get_authenticated_userinfo_id is not None:
+            data['userinfo_id'] = self.get_authenticated_userinfo_id
         self.form_data = data 
         self.add_post(data)
         return self.to_blog_post(edit_page=True)

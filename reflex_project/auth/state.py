@@ -10,26 +10,31 @@ class SessionState(reflex_local_auth.LocalAuthState):
 
     @rx.var(cache=True)
     # Access .user from class
-    def my_userinfo_id(self) -> str | None:
-        if self.authenticated_user_info is None:
+    
+    # Renamed from my_userinfo_id
+    def get_authenticated_userinfo_id(self) -> str | None:
+        if self.fetch_authenticated_user_info is None:
             return None
-        return self.authenticated_user_info.id
+        return self.fetch_authenticated_user_info.id
     
     @rx.var(cache=True)
-    def my_user_id(self) -> str | None:
+    # Renamed from my_user_id
+    def get_authenticated_user_id(self) -> str | None:
         if self.authenticated_user.id < 0:
             return None
         return self.authenticated_user.id
 
     @rx.var(cache=True)
-    def authenticated_username(self) -> str | None:
+    # Renamed from authenticated_username
+    def get_authenticated_username(self) -> str | None:
         if self.authenticated_user.id < 0:
             return None
         return self.authenticated_user.username
     
 
     @rx.var(cache=True)
-    def authenticated_user_info(self) -> UserInfo | None:
+    # Renamed from authenticated_user_info
+    def fetch_authenticated_user_info(self) -> UserInfo | None:
         if self.authenticated_user.id < 0:
             return
         with rx.session() as session:
@@ -50,7 +55,7 @@ class SessionState(reflex_local_auth.LocalAuthState):
         if not self.is_authenticated:
             return reflex_local_auth.LoginState.redir
         print(self.is_authenticated)
-        print(self.authenticated_user_info)
+        print(self.fetch_authenticated_user_info)
 
     def perform_logout(self):
         self.do_logout()
@@ -58,8 +63,8 @@ class SessionState(reflex_local_auth.LocalAuthState):
 
 class MyRegisterState(reflex_local_auth.RegistrationState):
     # This event handler must be named something besides `handle_registration`!!!
-    
-    def handle_registration_email(self, form_data):
+        # Renamed from handle_registration_email
+    def register_user_with_email(self, form_data):
         registration_result = self.handle_registration(form_data)
         if self.new_user_id >= 0:
             with rx.session() as session:

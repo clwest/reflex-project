@@ -5,9 +5,9 @@ from ..auth.state import SessionState
 from .. import navigation
 
 def sidebar_user_item() -> rx.Component:
-    user_info_obj = SessionState.authenticated_user_info
-    username_via_user_obj = rx.cond(SessionState.authenticated_username, 
-                                    SessionState.authenticated_username, 
+    user_info_obj = SessionState.fetch_authenticated_user_info
+    username_via_user_obj = rx.cond(SessionState.get_authenticated_username, 
+                                    SessionState.get_authenticated_username, 
                                     "Account")
     return  rx.cond( 
         user_info_obj,

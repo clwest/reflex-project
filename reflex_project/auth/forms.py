@@ -39,5 +39,5 @@ def my_register_form() -> rx.Component:
             ),
             min_width=MIN_WIDTH,
         ),
-        on_submit=MyRegisterState.handle_registration_email,
+        on_submit=MyRegisterState.register_user_with_email,
     )

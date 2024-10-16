@@ -26,7 +26,7 @@ class UserInfo(rx.Model, table=True):
     )
     session: List["ChatSession"]  = Relationship(back_populates="userinfo") # User to Session
     
-    memories: List["ChatBotMemory"] = Relationship(back_populates="userinfo") # 
+    memories: List["ChatBotMemory"] = Relationship(back_populates="userinfo") # User to ChatBotMemory
 
 
     # created_at
@@ -169,6 +169,36 @@ class ChatBotMemory(rx.Model, table=True):
 
     # Embedding related to this memory,
     memory_embedding: Any = Field(sa_column=Column(Vector(1536)), default=None)
+
+    # Timestamps
+    created_at: datetime = Field(
+        default_factory=utils.timing.get_utc_now,
+        sa_type=sqlalchemy.DateTime(timezone=True),
+        sa_column_kwargs={
+            "server_default": sqlalchemy.func.now()
+        },
+        nullable=False 
+    )
+    updated_at: datetime = Field(
+        default_factory=utils.timing.get_utc_now,
+        sa_type=sqlalchemy.DateTime(timezone=True),
+        sa_column_kwargs={
+            "onupdate": sqlalchemy.func.now(),
+            "server_default": sqlalchemy.func.now()
+        },
+        nullable=False
+    )
+
+class TokenUsage(rx.Model, table=True):
+    userinfo_id: int = Field(default=None, foreign_key="userinfo.id")
+    session_id: int = Field(default=None, foreign_key="chatsession.id")
+
+    # Token usage fields
+    prompt_tokens: int
+    completion_tokens: int
+    total_tokens: int
+    total_cost: float
+    usage_type: str # Chat, Dalle, etc
 
     # Timestamps
     created_at: datetime = Field(

@@ -40,6 +40,17 @@ def chat_page() -> rx.Component:
             rx.foreach(ChatSessionState.messages, message_box),
             width="100%",
         ),
+        rx.cond(
+            ChatSessionState.token_info,
+            rx.box(
+                    rx.text(f"Total Tokens: {ChatSessionState.token_info['total_tokens']}"),
+                    rx.text(f"Prompt Tokens: {ChatSessionState.token_info['prompt_tokens']}"),
+                    rx.text(f"Completion Tokens: {ChatSessionState.token_info['completion_tokens']}"),
+                    rx.text(f"Total Cost (USD): ${ChatSessionState.token_info['total_cost']:.6f}"),
+                    width="100%"
+                ),
+            rx.fragment(),
+        ),
         chat_form(),
         margin="3rem",
         spacing="5",

@@ -3,8 +3,10 @@ import sqlmodel
 from typing import List, Optional
 import reflex as rx
 from ..auth.state import SessionState
-from ..models import ChatSession, ChatMessage, ChatBotMemory
+from ..models import ChatSession, ChatMessage, ChatBotMemory, TokenUsage
 from . import ai
+from ..utils.token_counter import TokenCounterFactory
+
 
 class ChatMessageState(rx.Base):
     message: str
@@ -15,6 +17,7 @@ TODO: Start with figuring out why sessions are being created, they seem to be co
     then move into creating a search for embeddings. After that either add in the loaders or images.
 """
 class ChatSessionState(SessionState):
+    token_info: dict = {}
     chat_session: ChatSession = None
     not_found: Optional[bool] = None
     did_submit: bool = False
@@ -269,24 +272,49 @@ class ChatSessionState(SessionState):
             })
         return gpt_messages 
 
+    def log_token_usage(self, session_id, prompt_tokens, completion_tokens, total_tokens, total_cost, usage_type):
+        """Logs token usage to the TokenUsage table."""
+        print(f"Logging token usage for session {session_id}, user {self.my_userinfo_id}")
+        with rx.session() as db_session:
+            token_data = TokenUsage(
+                user_id=self.my_userinfo_id,
+                session_id=session_id,
+                prompt_tokens=prompt_tokens,
+                completion_tokens=completion_tokens,
+                total_tokens=total_tokens,
+                total_cost=total_cost,
+                usage_type=usage_type,
+            )
+            db_session.add(token_data)
+            db_session.commit()        
+
     async def handle_submit(self, form_data:dict):
-        # print("Form Data is", form_data)
+        
         user_message = form_data.get("message")
         if user_message:
             self.did_submit = True
-            
-            # Ensure a session exists before processing the message
             if not self.chat_session:
                 print("No chat session available, creating new one.")
                 self.create_new_chat_session()
-            
-            # Proceed with appending the user's message
             self.append_message_to_ui(user_message, is_bot=False)
+            print(f"Before user message insert - Session: {self.chat_session.id}, User: {self.my_userinfo_id}")
             self.insert_message_to_db(user_message, "user")
             yield
 
             gpt_messages = self.get_gpt_messages()
-            bot_response = ai.get_llm_response(gpt_messages)
+
+
+            # Track tokens for the AI response
+            token_counter_factory = TokenCounterFactory(self)
+
+            # def agent(query):
+            #     return ai.get_llm_response(query)
+            
+            # token_counter = token_counter_factory.create_token_counter(agent)
+
+            count_tokens = token_counter_factory.create_token_counter(ai.get_llm_response)
+            # gpt_messages = self.get_gpt_messages()
+            bot_response = count_tokens(gpt_messages)
 
             if "my name is" in user_message.lower():
                 name = user_message.split("my name is")[1].strip() # Simplistic extraction

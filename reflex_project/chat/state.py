@@ -3,7 +3,7 @@ import sqlmodel
 from typing import List, Optional
 import reflex as rx
 from ..auth.state import SessionState
-from ..models import ChatSession, ChatMessage, UserInfo
+from ..models import ChatSession, ChatMessage, ChatBotMemory
 from . import ai
 
 class ChatMessageState(rx.Base):
@@ -135,11 +135,25 @@ class ChatSessionState(SessionState):
             if isinstance(session_id, int):
                 self.get_session_from_db()
 
+    def load_user_memory(self):
+        with rx.session() as db_session:
+            memories = db_session.exec(
+                sqlmodel.select(ChatBotMemory).where(
+                    ChatBotMemory.userinfo_id == self.my_userinfo_id
+                )
+            ).all()
+
+            user_memory = {memory.memory_key: memory.memory_value for memory in memories}
+            print(f"Loaded memory for user {self.my_userinfo_id}: {user_memory}")
+            return user_memory
 
     def on_load(self):
         print("running on load")
         # Clear UI to start fresh
         self.clear_ui()
+
+        # Load user memory at the start
+        user_memory = self.load_user_memory()
 
         # Check if there's already a chat session for current user
         if not self.chat_session:
@@ -147,7 +161,35 @@ class ChatSessionState(SessionState):
             self.create_new_chat_session()
         else:
             print(f"Using existing session: {self.chat_session.id}")
-    
+        
+        if user_memory:
+            memory_message = f"Recalling information: {user_memory}"
+            self.append_message_to_ui(memory_message, is_bot=True)
+
+    # When bot learns something about the user we store that information
+    def store_user_memory(self, key: str, value: str):
+        with rx.session() as db_session:
+            # Check if memory already exists
+            existing_memory = db_session.exec(
+                sqlmodel.select(ChatBotMemory).where(
+                    ChatBotMemory.userinfo_id == self.my_userinfo_id,
+                    ChatBotMemory.memory_key == key
+                )
+            ).one_or_none()
+
+            if existing_memory:
+                print(f"Updating existing memory: {key} = {value}")
+                existing_memory.memory_value = value
+            else:
+                print(f"Storing new memory: {key} = {value}")
+                new_memory = ChatBotMemory(
+                    userinfo_id=self.my_userinfo_id,
+                    memory_key=key,
+                    memory_value=value
+                )
+                db_session.add(new_memory)
+            db_session.commit()
+
     def insert_message_to_db(self, content, role='unknown'):
         print("Inserting chat session to db")
 
@@ -199,10 +241,22 @@ class ChatSessionState(SessionState):
         )
     
     def get_gpt_messages(self):
+        # Load the user's memory and include it in the system prompt
+        user_memory = self.load_user_memory()
+
+        system_prompt = "You are a helpful assistant with a great deal of general knowledge. Respond in markdown."
+
+        # If user memory exists, add it to the system prompt
+
+        if user_memory:
+            memory_info = "\n".join([f"{key}: {value}" for key, value in user_memory.items()])
+            system_prompt += f" You remember the following about the user:\n{memory_info}"
+
+
         gpt_messages = [
             {
                 "role": "system",
-                "content": "You are a helpful assistant with a great deal of general knowledge. Respond in markdown"
+                "content": system_prompt
             }
         ]
         for chat_message in self.messages:
@@ -228,18 +282,22 @@ class ChatSessionState(SessionState):
             
             # Proceed with appending the user's message
             self.append_message_to_ui(user_message, is_bot=False)
-            print(f"Before user message insert - Session: {self.chat_session.id}, User: {self.my_userinfo_id}")
             self.insert_message_to_db(user_message, "user")
             yield
 
             gpt_messages = self.get_gpt_messages()
             bot_response = ai.get_llm_response(gpt_messages)
 
-            # Log the session status after the AI response
-            print(f"Before AI response insert - Session: {self.chat_session.id}, User: {self.my_userinfo_id}")
+            if "my name is" in user_message.lower():
+                name = user_message.split("my name is")[1].strip() # Simplistic extraction
+                self.store_user_memory("user_name", name)
+
+            # # Log the session status after the AI response
+            # print(f"Before AI response insert - Session: {self.chat_session.id}, User: {self.my_userinfo_id}")
             
             self.did_submit = False
 
+            # Append AI Response
             self.append_message_to_ui(bot_response, is_bot=True)
             self.insert_message_to_db(bot_response, role="system")
             

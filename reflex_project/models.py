@@ -25,8 +25,11 @@ class UserInfo(rx.Model, table=True):
         back_populates="userinfo"
     )
     session: List["ChatSession"]  = Relationship(back_populates="userinfo") # User to Session
-    # created_at
+    
+    memories: List["ChatBotMemory"] = Relationship(back_populates="userinfo") # 
 
+
+    # created_at
     created_at: datetime = Field(
         default_factory=utils.timing.get_utc_now,
         sa_type=sqlalchemy.DateTime(timezone=True),
@@ -152,4 +155,36 @@ class ChatMessage(rx.Model, table=True):
             'server_default': sqlalchemy.func.now()
         },
         nullable=False    
+    )
+
+# Collection of User Preferences, Settings, and other related fields to make the Bot more personal feeling.
+class ChatBotMemory(rx.Model, table=True):
+    # User that the memory is associated with
+    userinfo_id: int = Field(default=None, foreign_key="userinfo.id")
+    userinfo: Optional["UserInfo"] = Relationship(back_populates="memories")
+
+    # Content of the memory
+    memory_key: str # user_name, occupation, family life, etc
+    memory_value: str # Value like "Chris", "Programmer", "Dad"
+
+    # Embedding related to this memory,
+    memory_embedding: Any = Field(sa_column=Column(Vector(1536)), default=None)
+
+    # Timestamps
+    created_at: datetime = Field(
+        default_factory=utils.timing.get_utc_now,
+        sa_type=sqlalchemy.DateTime(timezone=True),
+        sa_column_kwargs={
+            "server_default": sqlalchemy.func.now()
+        },
+        nullable=False 
+    )
+    updated_at: datetime = Field(
+        default_factory=utils.timing.get_utc_now,
+        sa_type=sqlalchemy.DateTime(timezone=True),
+        sa_column_kwargs={
+            "onupdate": sqlalchemy.func.now(),
+            "server_default": sqlalchemy.func.now()
+        },
+        nullable=False
     )

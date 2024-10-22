@@ -146,8 +146,9 @@ def sidebar_items() -> rx.Component:
         sidebar_item("Blog", "square-library", navigation.routes.BLOG_POSTS_ROUTE),
         sidebar_item("Chat", "bot", navigation.routes.CHATBOT_ROUTE),
         sidebar_item("Create Post", "square-library", navigation.routes.BLOG_POSTS_ADD_ROUTE),
+        sidebar_item("Profile Page", "user", navigation.routes.USER_PROFILE),
         sidebar_item("Contact Us", "mails", navigation.routes.CONTACT_US_ROUTE),
-        sidebar_item("Contact History", "contact-round", navigation.routes.CONTACT_ENTRIES_ROUTE),
+        # sidebar_item("Contact History", "contact-round", navigation.routes.CONTACT_ENTRIES_ROUTE),
         spacing="1",
         width="100%",
     )

@@ -18,6 +18,9 @@ class NavState(rx.State):
     def to_logout(self):
         return rx.redirect(routes.LOGOUT_ROUTE)
     
+    def to_profile(self):
+        return rx.redirect(routes.USER_PROFILE)
+    
     def to_about_us(self):
         return rx.redirect(routes.ABOUT_US_ROUTE)
     

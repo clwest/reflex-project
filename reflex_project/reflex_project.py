@@ -18,7 +18,7 @@ from .articles.detail import article_detail_page
 from .articles.list import article_public_list_page, article_public_list_component
 from .articles.state import ArticlePublicState
 
-from . import  blog, contact, navigation, pages , chat
+from . import  blog, contact, navigation, pages , chat, user_profile
 
 
 
@@ -66,7 +66,15 @@ app.add_page(
     title="Logout",
 )
 
+
+
 # my pages
+
+app.add_page(
+    user_profile.user_profile_page,
+    route=navigation.routes.USER_PROFILE
+)
+
 app.add_page(pages.about_page, 
             route=navigation.routes.ABOUT_US_ROUTE)
 

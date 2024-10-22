@@ -1,7 +1,6 @@
 import reflex as rx
 import reflex_local_auth
-from ..ui.base import base_page
-
+from ..ui.base import base_page 
 from . import forms
 
 from .notfound import blog_post_not_found

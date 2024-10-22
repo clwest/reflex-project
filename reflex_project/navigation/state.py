@@ -31,8 +31,10 @@ class NavState(rx.State):
     # Blog and Detail routes
     def to_blog(self):
         return rx.redirect(routes.BLOG_POSTS_ROUTE)
+    
     def to_blog_add(self):
         return rx.redirect(routes.BLOG_POSTS_ADD_ROUTE)
+    
     def to_create(self):
         return self.to_blog_add()
 
@@ -46,7 +48,13 @@ class NavState(rx.State):
         )
     
     # Chatbot Routes
+
     def to_chatbot(self):
         return rx.redirect(
             routes.CHATBOT_ROUTE
+        )
+    
+    def to_chatbot_setup(self):
+        return rx.redirect(
+            routes.CHATBOT_SETUP_ROUTE
         )

@@ -1,37 +1,43 @@
-from langchain_community.callbacks.manager import get_openai_callback
+from langchain_community.callbacks import get_openai_callback
 from pprint import pprint
+from ..chat.token_state import TokenUsageState 
 
 
 class TokenCounterFactory:
-    def __init__(self, chat_session_state):
+    def __init__(self, chat_session_state, userinfo_id):
         self.chat_session_state = chat_session_state
+        self.userinfo_id = userinfo_id
 
     def create_token_counter(self, agent):
         def count_tokens(query):
             with get_openai_callback() as cb:
                 result = agent(query)
+                print(f"Captured tokens - Prompt: {cb.prompt_tokens}, Completion: {cb.completion_tokens}, Total: {cb.total_tokens}, Cost: {cb.total_cost}")
                 self._log_token_usage(cb)
             return result
 
         return count_tokens
 
     def _log_token_usage(self, callback):
-        # Log token usage into the database using the 'log_token_usage' method in ChatSessionState
-        session_id = self.chat_session_state.chat_session.id
-        self.chat_session_state.log_token_usage(
+        """Logs token usage to TokenUsageState."""
+        session_id=self.chat_session_state.chat_session.id
+
+        TokenUsageState.track_token_usage(
             session_id=session_id,
             prompt_tokens=callback.prompt_tokens,
             completion_tokens=callback.completion_tokens,
             total_tokens=callback.total_tokens,
             total_cost=callback.total_cost,
-            usage_type="chat" # Can change based on usage
+            userinfo_id=self.userinfo_id,
+            usage_type="chat"
         )
-        
-    # Also print the token usage for debugging purposes
+
         pprint(f"Spent a total of {callback.total_tokens} tokens")
         pprint(f"Prompt Tokens: {callback.prompt_tokens}")
         pprint(f"Completion Tokens: {callback.completion_tokens}")
         pprint(f"Total Cost (USD): ${callback.total_cost}")
+        # Set the values for the TokenUsageState
+
 
 
 # Usage

@@ -194,10 +194,10 @@ class TokenUsage(rx.Model, table=True):
     session_id: int = Field(default=None, foreign_key="chatsession.id")
 
     # Token usage fields
-    prompt_tokens: int
-    completion_tokens: int
-    total_tokens: int
-    total_cost: float
+    prompt_tokens: Optional[int] = 0
+    completion_tokens: Optional[int] = 0
+    total_tokens: Optional[int] = 0
+    total_cost: Optional[float] = 0.0
     usage_type: str # Chat, Dalle, etc
 
     # Timestamps

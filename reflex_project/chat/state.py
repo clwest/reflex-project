@@ -272,21 +272,6 @@ class ChatSessionState(SessionState):
             })
         return gpt_messages 
 
-    def log_token_usage(self, session_id, prompt_tokens, completion_tokens, total_tokens, total_cost, usage_type):
-        """Logs token usage to the TokenUsage table."""
-        print(f"Logging token usage for session {session_id}, user {self.my_userinfo_id}")
-        with rx.session() as db_session:
-            token_data = TokenUsage(
-                user_id=self.my_userinfo_id,
-                session_id=session_id,
-                prompt_tokens=prompt_tokens,
-                completion_tokens=completion_tokens,
-                total_tokens=total_tokens,
-                total_cost=total_cost,
-                usage_type=usage_type,
-            )
-            db_session.add(token_data)
-            db_session.commit()        
 
     async def handle_submit(self, form_data:dict):
         
@@ -301,27 +286,22 @@ class ChatSessionState(SessionState):
             self.insert_message_to_db(user_message, "user")
             yield
 
-            gpt_messages = self.get_gpt_messages()
-
-
-            # Track tokens for the AI response
-            token_counter_factory = TokenCounterFactory(self)
-
-            # def agent(query):
-            #     return ai.get_llm_response(query)
-            
-            # token_counter = token_counter_factory.create_token_counter(agent)
-
-            count_tokens = token_counter_factory.create_token_counter(ai.get_llm_response)
-            # gpt_messages = self.get_gpt_messages()
-            bot_response = count_tokens(gpt_messages)
 
             if "my name is" in user_message.lower():
                 name = user_message.split("my name is")[1].strip() # Simplistic extraction
                 self.store_user_memory("user_name", name)
 
-            # # Log the session status after the AI response
-            # print(f"Before AI response insert - Session: {self.chat_session.id}, User: {self.my_userinfo_id}")
+            gpt_messages = self.get_gpt_messages()
+
+            userinfo_id = self.my_userinfo_id
+            token_counter_factory = TokenCounterFactory(self, userinfo_id)
+
+            def agent(query):
+                return ai.get_llm_response(query)
+            
+            count_tokens = token_counter_factory.create_token_counter(ai.get_llm_response)
+            bot_response = count_tokens(gpt_messages)
+
             
             self.did_submit = False
 
@@ -331,4 +311,3 @@ class ChatSessionState(SessionState):
             
             print(f"After AI insert to DB response insert - Session: {self.chat_session.id}, User: {self.my_userinfo_id}")
             yield
-

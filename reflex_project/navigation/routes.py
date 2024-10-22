@@ -13,6 +13,8 @@ BLOG_POSTS_ADD_ROUTE="/blog/add"
 LOGOUT_ROUTE="/logout"
 PRICE_ROUTE="/pricing"
 
+
+CHATBOT_SETUP_ROUTE="/chat/setup"
 CHATBOT_ROUTE="/chat"
 # Chat_LIST_ROUTE
 # CHAT_LIST_STATE

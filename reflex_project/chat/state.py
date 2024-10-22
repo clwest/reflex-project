@@ -4,6 +4,7 @@ from typing import List, Optional
 import reflex as rx
 from ..auth.state import SessionState
 from ..models import ChatSession, ChatMessage, ChatBotMemory, TokenUsage
+from ..user_profile.state import UserProfileState
 from . import ai
 from ..utils.token_counter import TokenCounterFactory
 
@@ -12,10 +13,7 @@ class ChatMessageState(rx.Base):
     message: str
     is_bot: bool = False
 
-""" 
-TODO: Start with figuring out why sessions are being created, they seem to be coming from the AI for some reason.
-    then move into creating a search for embeddings. After that either add in the loaders or images.
-"""
+
 class ChatSessionState(SessionState):
     token_info: dict = {}
     chat_session: ChatSession = None
@@ -262,6 +260,13 @@ class ChatSessionState(SessionState):
                 "content": system_prompt
             }
         ]
+
+        # Fetch relevant prompts and suggest them
+        relevant_prompts = UserProfileState.get_relevant_prompts(self.my_userinfo_id)
+        if relevant_prompts:
+            suggestion_prompts = "Here are some suggestions based on your saved preferences:\n" + "\n".join([f"{i+1}. {prompt}" for i, prompt in enumerate(relevant_prompts)])
+            gpt_messages.append({"role": "system", "content": suggestion_prompts})
+
         for chat_message in self.messages:
             role = "user"
             if chat_message.is_bot:

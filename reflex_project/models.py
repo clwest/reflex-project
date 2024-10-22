@@ -28,6 +28,8 @@ class UserInfo(rx.Model, table=True):
     
     memories: List["ChatBotMemory"] = Relationship(back_populates="userinfo") # User to ChatBotMemory
 
+    prompts: List["UserPrompts"] = Relationship(back_populates="userinfo") # User To Prompts
+
 
     # created_at
     created_at: datetime = Field(
@@ -48,6 +50,34 @@ class UserInfo(rx.Model, table=True):
         nullable=False
     )
 
+
+class UserPrompts(rx.Model, table=True):
+    # Relationship to the user
+    userinfo_id: int = Field(default=None, foreign_key="userinfo.id")
+    userinfo: Optional["UserInfo"] = Relationship(back_populates="prompts")
+
+    # Prompt Content
+    prompt_text: str
+    prompt_category: str = Field(default="General") # Can categorize prompts if desired
+
+    # created_at
+    created_at: datetime = Field(
+        default_factory=utils.timing.get_utc_now,
+        sa_type=sqlalchemy.DateTime(timezone=True),
+        sa_column_kwargs={
+            'server_default': sqlalchemy.func.now()
+        },
+        nullable=False
+    )
+    updated_at: datetime = Field(
+        default_factory=utils.timing.get_utc_now,
+        sa_type=sqlalchemy.DateTime(timezone=True),
+        sa_column_kwargs={
+            'onupdate': sqlalchemy.func.now(),
+            'server_default': sqlalchemy.func.now()
+        },
+        nullable=False
+    )
 
 class BlogPostModel(rx.Model, table=True):
     # User

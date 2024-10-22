@@ -22,3 +22,23 @@ def user_profile_form() -> rx.Component:
         on_submit=UserProfileState.handle_initial_setup,
         reset_on_submit=True
     )
+
+def prompt_form() -> rx.Component:
+    return rx.form(
+        rx.vstack(
+            rx.text_area(
+                name="prompt_text",
+                placeholder="Enter your AI prompt",
+                required=True
+            ),
+            rx.select(
+                ["General", "AI Art", "Text Generation", "Other"],
+                default_value="General",
+                name="prompt_category",
+                required=False
+            ),
+            rx.button("Save Prompt", type="submit"),
+        ),
+        on_submit=UserProfileState.handle_prompt_submit,
+        reset_on_submit=True
+    )

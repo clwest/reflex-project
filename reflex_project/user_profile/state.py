@@ -46,6 +46,32 @@ class UserProfileState(SessionState):
         self.store_user_memory("hobbies", hobbies)
         self.store_user_memory("preferred_topics", preferred_topics)
 
+    @staticmethod
+    def suggest_prompts(user_memory: dict) -> List[str]:
+        # Gather data from the initial setup
+        # user_memory = self.load_user_memory()
+        # print(f"User memory loaded: {user_memory}")
+
+        user_name = user_memory.get("user_name", "User")
+        occupation = user_memory.get("occupation", None)
+        goals = user_memory.get("goals", None)
+        learning_style = user_memory.get("learning_style", None)
+        hobbies = user_memory.get("hobbies", None)
+        preferred_topics = user_memory.get("preferred_topics", None)
+
+        # Start building the prompt suggestions
+        prompts = [
+            f"Hello {user_name}, how can I assist you today?",
+            f"As a {occupation}, do you want to learn more about tools or strategies in your field?" if occupation else "",
+            f"What are the next steps toward your goal of {goals}?" if goals else "",
+            f"Would you like me to adapt to your {learning_style} learning style for more effective communication?" if learning_style else "",
+            f"Any interesting updates on your hobbies, like {hobbies}?" if hobbies else "",
+            f"Let's explore topics like {preferred_topics}!" if preferred_topics else "",
+        ]
+        
+        # Filter out empty prompt suggestions
+        return [prompt for prompt in prompts if prompt]
+
     def store_user_memory(self, key: str, value: str):
         # reuse store_user_memory
         with rx.session() as db_session:

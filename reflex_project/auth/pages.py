@@ -40,10 +40,10 @@ def my_logout_page() -> rx.Component:
     my_child = rx.vstack(
             rx.heading("You are about to log out.", size="7"),
             rx.link(
-            rx.button("No", color_scheme="crimson"),
+            rx.button("No", color_scheme="cyan"),
             href=navigation.routes.HOME_ROUTE,
             ),
-            rx.button("Yes, logout", on_click=SessionState.perform_logout, color_scheme="amber"),
+            rx.button("Yes, logout", on_click=SessionState.perform_logout, color_scheme="cyan"),
             spacing="5",
             justify="center",
             align="center",

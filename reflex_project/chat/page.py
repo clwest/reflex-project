@@ -9,6 +9,7 @@ from .forms import chat_form
 message_style = dict(display="inline-block", padding="1em", border_radius="8px", max_width=["30em", "30em", "50em", "50em", "50em", "50em"])
 
 def message_box(chat_message: ChatMessageState) -> rx.Component:
+    ChatSessionState.on_load()
     return rx.box(
         rx.box(
             rx.markdown(
@@ -28,6 +29,10 @@ def message_box(chat_message: ChatMessageState) -> rx.Component:
 
 def chat_page() -> rx.Component:
     from ..ui.base import base_page
+
+    #Fetch the suggested prompts
+    # suggested_prompts = ChatSessionState.suggest_prompts()
+
     my_child = rx.vstack(
         rx.heading("ChatBot", size="9", color_scheme="cyan"),
         rx.cond(ChatSessionState.not_found, "Not Found", "Found"),
@@ -36,11 +41,14 @@ def chat_page() -> rx.Component:
         rx.button("New Chat", on_click=ChatSessionState.create_new_and_redirect)
         ),
         rx.box(
-            rx.foreach(ChatSessionState.messages, message_box),
-            width="100%",
-        ),
+            rx.scroll_area(
+                
+                    rx.foreach(ChatSessionState.messages, message_box),
+                    width="100%",
+            ),
 
-        chat_form(),
+        ),
+        chat_form(suggested_prompts=ChatSessionState.suggested_prompts),
 
         margin="3rem",
         spacing="5",
@@ -51,4 +59,5 @@ def chat_page() -> rx.Component:
 
         id="chat-bot"
     )
+    # print(f"Suggested prompts in chat_page on refresh: {ChatSessionState.suggested_prompts}")
     return base_page(my_child)

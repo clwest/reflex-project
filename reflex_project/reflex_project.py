@@ -142,6 +142,9 @@ app.add_page(
             pages.price_page,
             route=navigation.routes.PRICE_ROUTE)
 
+
+# AI Routes.
+
 app.add_page(
             chat.chat_page,
             route=navigation.routes.CHATBOT_ROUTE,

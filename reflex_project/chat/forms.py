@@ -1,8 +1,10 @@
 import reflex as rx
 from .state import ChatMessageState, ChatSessionState
+from typing import List, Optional
 
-def chat_form()-> rx.Component:
-    
+
+
+def chat_form(suggested_prompts: List[str] = [])-> rx.Component:
     return rx.form(
         rx.vstack(
                     rx.text_area(
@@ -19,62 +21,25 @@ def chat_form()-> rx.Component:
                             rx.fragment(),
                         ),
                     ),
+                    rx.cond(
+                        suggested_prompts,                        
+                        rx.box(
+                            rx.heading("Suggested Prompts:", color_scheme="cyan"),
+                            rx.foreach(
+                                suggested_prompts,
+                                lambda prompt: rx.button(
+                                    prompt, 
+                                    on_click=lambda: ChatSessionState.handle_suggested_prompts(prompt),
+                                    style={"margin": "0.5em"}
+                                )
+                            ),
+                            spacing="0.5em",
+                        ),
+                        rx.fragment()
+                    ),
         ),
         on_submit=ChatSessionState.handle_submit,
         reset_on_submit=True
     )
 
-def initial_setup_form() -> rx.Component:
-    return rx.form(
-        rx.vstack(
-            rx.heading("Let's get to know you!"),
 
-            # Name input
-            rx.input(
-                name="name",
-                placeholder="Enter your name",
-                required=True,
-            ),
-
-            # Occupation input
-            rx.input(
-                name="occupation",
-                placeholder="What is your current profession?",
-                required=False,
-            ),
-
-            # Goals input
-            rx.text_area(
-                name="goals",
-                placeholder="What are your goals?",
-                required=False,
-            ),
-            
-            # Learning style input (select)
-            rx.select(
-                name="learning_style",
-                options=["Visual", "Auditory", "Reading/Writing", "Kinesthetic"],
-                placeholder="What's your learning style?",
-                required=False,
-            ),
-
-            # Hobbies input
-            rx.text_area(
-                name="hobbies",
-                placeholder="List some of your hobbies or interests",
-                required=False,
-            ),
-
-            # Preferred topics input
-            rx.text_area(
-                name="preferred_topics",
-                placeholder="Topics you'd like to explore or learn more about.",
-                required=False,
-            ),
-
-            # Submit button
-            rx.button("Submit", type="submit"),
-        ),
-        on_submit=ChatSessionState.handle_initial_setup, # Handle the form data.
-        reset_on_submit=True
-    )

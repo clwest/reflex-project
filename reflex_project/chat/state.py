@@ -20,6 +20,7 @@ class ChatSessionState(SessionState):
     not_found: Optional[bool] = None
     did_submit: bool = False
     messages: List[ChatMessageState] = []
+    suggested_prompts: List[str] = []
 
     @rx.var
     def my_userinfo_id(self) -> int:
@@ -76,7 +77,7 @@ class ChatSessionState(SessionState):
             return obj
 
     def clear_ui(self, reset_session=False):
-        print(f"Clearing UI - Session: {self.chat_session.id if self.chat_session else 'None'}")
+        print(f"clear_ui method called to Clear UI - Session: {self.chat_session.id if self.chat_session else 'None'}")
         # Only reset session if explicitly asked to
         if reset_session:
             self.chat_session = None
@@ -85,7 +86,8 @@ class ChatSessionState(SessionState):
         self.messages = []
     
     def create_new_and_redirect(self):
-
+        # Call on_load here to trigger the prompt suggestions and memory loading
+        self.on_load() # This will ensure prompts are set when creating a new chat
         self.clear_ui(reset_session=True) # Explicitly clear the session
         new_chat_session = self.create_new_chat_session(force_new=True)
         print(f"Creating new session: {new_chat_session.id}")
@@ -118,8 +120,9 @@ class ChatSessionState(SessionState):
                 is_bot = False if msg_obj.role == "user" else True
                 self.append_message_to_ui(msg_text, is_bot=True)
 
-
     def on_detail_load(self):
+        # Ensure the on_load method runs here
+        self.on_load() # Load memory and prompts
         session_id = self.get_session_id
         reload_detail = False
 
@@ -145,7 +148,7 @@ class ChatSessionState(SessionState):
             ).all()
 
             user_memory = {memory.memory_key: memory.memory_value for memory in memories}
-            print(f"Loaded memory for user {self.my_userinfo_id}: {user_memory}")
+            print(f"Loaded memory from load_user_memory method {self.my_userinfo_id}: {user_memory}")
             return user_memory
 
     def on_load(self):
@@ -155,17 +158,28 @@ class ChatSessionState(SessionState):
 
         # Load user memory at the start
         user_memory = self.load_user_memory()
+        print(f"User memory from on_load method: {user_memory}")
 
-        # Check if there's already a chat session for current user
+        # Suggest prompts
+        self.suggested_prompts = UserProfileState.suggest_prompts(user_memory)
+        print(f"Suggested prompts in ChatSessionState: {self.suggested_prompts}")
+        
+        if self.suggested_prompts:
+            prompt_message = "Here are some suggestions to get started:\n"
+            for idx, prompt in enumerate(self.suggested_prompts):
+                prompt_message += f"{idx + 1}. {prompt}\n"
+            self.append_message_to_ui(prompt_message, is_bot=True)
+
+        # Continue with chat setup....
         if not self.chat_session:
             print("No chat session found, creating a new one.")
             self.create_new_chat_session()
         else:
             print(f"Using existing session: {self.chat_session.id}")
         
-        if user_memory:
-            memory_message = f"Recalling information: {user_memory}"
-            self.append_message_to_ui(memory_message, is_bot=True)
+        # if user_memory:
+        #     memory_message = f"Recalling information: {user_memory}"
+        #     self.append_message_to_ui(memory_message, is_bot=True)
 
     # When bot learns something about the user we store that information
     def store_user_memory(self, key: str, value: str):
@@ -216,7 +230,6 @@ class ChatSessionState(SessionState):
             db_session.add(obj)
             db_session.commit() 
         print(f"Message inserted to session: {self.chat_session.id}")
-
 
     def append_message_to_ui(self, message, is_bot:bool=False):
         if self.chat_session is not None:
@@ -277,6 +290,31 @@ class ChatSessionState(SessionState):
             })
         return gpt_messages 
 
+    def handle_suggested_prompts(self, prompt: str):
+        """Handle the user clicking on a suggested prompt."""
+        print(f"Suggested prompt clicked: {prompt}")
+
+        # Treat the suggested prompt like a normal message
+        self.append_message_to_ui(prompt, is_bot=False)
+        self.insert_message_to_db(prompt, "user")
+
+        # Send the prompt to the AI for processing
+        gpt_messages = self.get_gpt_messages()
+
+        userinfo_id = self.my_userinfo_id
+        token_counter_factory = TokenCounterFactory(self, userinfo_id)
+
+        def agent(query):
+            return ai.get_llm_response(query)
+        
+        count_tokens = token_counter_factory.create_token_counter(ai.get_llm_response)
+        bot_response = count_tokens(gpt_messages)
+
+        # Append AI Response
+        self.append_message_to_ui(bot_response, is_bot=True)
+        self.insert_message_to_db(bot_response, role="system")
+
+        print(f"Processed suggested prompt - Session: {self.chat_session.id}")
 
     async def handle_submit(self, form_data:dict):
         
